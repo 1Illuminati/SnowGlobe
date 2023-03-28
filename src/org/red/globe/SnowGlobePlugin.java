@@ -11,15 +11,10 @@ import org.red.globe.util.RotateHelper;
 public final class SnowGlobePlugin extends JavaPlugin {
     public static final String NAME = "SnowGlobe";
     private static SnowGlobePlugin plugin;
-    private static boolean reload = false;
     private static final boolean debug = true;
 
     public static SnowGlobePlugin getPlugin() {
         return plugin;
-    }
-
-    public static boolean isReload() {
-        return reload;
     }
 
     public static void sendLog(Object message) {
@@ -36,7 +31,6 @@ public final class SnowGlobePlugin extends JavaPlugin {
         // Plugin startup logic
         plugin = this;
         setCommand();
-        RotateHelper.init();
     }
 
     @Override

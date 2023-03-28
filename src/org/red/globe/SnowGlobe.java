@@ -19,16 +19,14 @@ public class SnowGlobe {
     private final String name;
     private final BoundingBox box;
     private final World world;
-    private final List<Block> blocks = new ArrayList<>();
     private final List<SnowGlobeBlock> snowGlobeBlocks = new ArrayList<>();
     private final Vector size;
     private final boolean filled;
-    private boolean creating;
+    private boolean creating = true;
     private boolean spawning = false;
     private Vector3f scale;
 
     public SnowGlobe(String name, Location start, Location end, boolean filled) {
-        creating = true;
         this.name = name;
         this.box = BoundingBox.of(start.toVector().toBlockVector(), end.toVector().toBlockVector());
 
@@ -58,8 +56,6 @@ public class SnowGlobe {
                         if (type == Material.AIR || type == Material.VOID_AIR || type == Material.CAVE_AIR || (blockIsClose(block) && filled))
                             continue;
 
-                        blocks.add(block);
-
                         Vector vector = loc.clone().toVector().add(new Vector(-minX, -minY, -minZ)).toBlockVector();
                         snowGlobeBlocks.add(new SnowGlobeBlock(vector, block.getState()));
                     }
@@ -72,21 +68,7 @@ public class SnowGlobe {
         future.join();
     }
 
-    public boolean blockIsClose(Block block) {
-        int[][] directions = {{0, 1, 0}, {0, -1, 0}, {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
-        Block[] nearBlocks = new Block[6];
-        for (int i = 0; i < directions.length; i++) {
-            nearBlocks[i] = block.getLocation().clone().add(directions[i][0], directions[i][1], directions[i][2]).getBlock();
 
-            if (!box.contains(nearBlocks[i].getLocation().toVector().toBlockVector()))
-                return false;
-
-            if (isIgnoreBlock(nearBlocks[i].getType()))
-                return false;
-        }
-
-        return true;
-    }
 
     public boolean isCreating() {
         return this.creating;
@@ -124,16 +106,25 @@ public class SnowGlobe {
         return this.world;
     }
 
-    public List<Block> getBlocks() {
-        return this.blocks;
+    private boolean blockIsClose(Block block) {
+        int[][] directions = {{0, 1, 0}, {0, -1, 0}, {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
+        Block[] nearBlocks = new Block[6];
+        for (int i = 0; i < directions.length; i++) {
+            nearBlocks[i] = block.getLocation().clone().add(directions[i][0], directions[i][1], directions[i][2]).getBlock();
+
+            if (!box.contains(nearBlocks[i].getLocation().toVector().toBlockVector()))
+                return false;
+
+            if (isIgnoreBlock(nearBlocks[i].getType()))
+                return false;
+        }
+
+        return true;
     }
 
     public void spawn(Location location) {
         if (location == null)
             throw new NullPointerException("location is null");
-
-        if (spawning)
-            throw new IllegalStateException("already spawning");
 
         spawning = true;
 
