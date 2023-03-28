@@ -22,7 +22,7 @@ public class TestCommand extends AbstractCommand {
         Location start = new Location(loc.getWorld(), loc.getBlockX() - size, loc.getBlockY() - size, loc.getBlockZ() - size);
         Location end = new Location(loc.getWorld(), loc.getBlockX() + size, loc.getBlockY() + size, loc.getBlockZ() + size);
 
-        new SnowGlobe("test", start, end).spawn(loc);
+        new SnowGlobe("test", start, end, Boolean.parseBoolean(args[1])).spawn(loc);
 
         return true;
     }

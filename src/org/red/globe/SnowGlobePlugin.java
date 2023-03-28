@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.red.globe.command.AbstractCommand;
 import org.red.globe.command.SnowGlobeCommand;
 import org.red.globe.command.TestCommand;
+import org.red.globe.util.RotateHelper;
 
 public final class SnowGlobePlugin extends JavaPlugin {
     public static final String NAME = "SnowGlobe";
@@ -35,6 +36,7 @@ public final class SnowGlobePlugin extends JavaPlugin {
         // Plugin startup logic
         plugin = this;
         setCommand();
+        RotateHelper.init();
     }
 
     @Override
