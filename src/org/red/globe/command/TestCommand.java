@@ -3,7 +3,8 @@ package org.red.globe.command;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.red.globe.SnowGlobe;
+import org.red.globe.NewSnowGlobe;
+import org.red.globe.entity.player.PlayerData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,12 @@ public class TestCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, String label, String[] args) {
         Player player = (Player) sender;
+        PlayerData playerData = PlayerData.getPlayerData(player);
         Location loc = player.getLocation();
-        int size = Integer.parseInt(args[0]);
-        Location start = new Location(loc.getWorld(), loc.getBlockX() - size, loc.getBlockY() - size, loc.getBlockZ() - size);
-        Location end = new Location(loc.getWorld(), loc.getBlockX() + size, loc.getBlockY() + size, loc.getBlockZ() + size);
 
-        new SnowGlobe("test", start, end, Boolean.parseBoolean(args[1])).spawn(loc);
+        NewSnowGlobe snowGlobe = new NewSnowGlobe("test", playerData.getPos1(), playerData.getPos2());
+        snowGlobe.addRotation(50, 0, 0);
+        snowGlobe.spawn(loc);
 
         return true;
     }

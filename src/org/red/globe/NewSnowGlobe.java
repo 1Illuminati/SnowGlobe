@@ -99,7 +99,15 @@ public class NewSnowGlobe {
         int sizeY = maxY - minY;
         int sizeZ = maxZ - minZ;
 
-        Vector displaySize = new Vector(1F / sizeX, 1F / sizeY, 1F / sizeZ);
+        Vector displaySize;
+
+        if (this.sizeType == SizeType.FILLED)
+            displaySize = new Vector(1F / sizeX, 1F / sizeY, 1F / sizeZ);
+        else if (this.sizeType == SizeType.LONG) {
+            int longest = Math.max(Math.max(sizeX, sizeY), sizeZ);
+            displaySize = new Vector(1F / longest, 1F / longest, 1f / longest);
+        } else
+            throw new IllegalArgumentException("SizeType is Null");
 
         List<BlockDisplayBuilder> builders = new ArrayList<>();
 
@@ -134,7 +142,7 @@ public class NewSnowGlobe {
 
             builders.forEach(BlockDisplayBuilder::spawn);
         } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
     }
 
