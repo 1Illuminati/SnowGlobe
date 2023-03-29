@@ -6,6 +6,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Transformation;
+import org.bukkit.util.Vector;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
@@ -59,6 +60,13 @@ public class BlockDisplayBuilder {
 
     public BlockDisplayBuilder setScale(float x, float y, float z) {
         return this.setScale(new Vector3f(x, y, z));
+    }
+    public BlockDisplayBuilder setScale(double x, double y, double z) {
+        return this.setScale(new Vector3f((float) x,(float) y,(float) z));
+    }
+
+    public BlockDisplayBuilder setScale(Vector vector) {
+        return this.setScale(new Vector3f((float) vector.getX(),(float) vector.getY(),(float) vector.getZ()));
     }
 
     public BlockDisplayBuilder setScale(Vector3f scale) {
