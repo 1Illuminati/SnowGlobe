@@ -2,6 +2,7 @@ package org.red.globe.entity;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Transformation;
@@ -15,6 +16,7 @@ public class BlockDisplayBuilder {
     private Vector3f translation = new Vector3f(0);
     private AxisAngle4f leftRotation = new AxisAngle4f();
     private AxisAngle4f rightRotation = new AxisAngle4f();
+    private BlockData blockData;
     public BlockDisplayBuilder(Location location) {
         this.location = location;
         this.world = location.getWorld();
@@ -64,9 +66,16 @@ public class BlockDisplayBuilder {
         return this;
     }
 
+    public BlockDisplayBuilder setBlockData(BlockData blockData) {
+        this.blockData = blockData;
+        return this;
+    }
+
     public BlockDisplay spawn() {
         BlockDisplay blockDisplay = (BlockDisplay) world.spawnEntity(location, EntityType.BLOCK_DISPLAY);
         blockDisplay.setTransformation(new Transformation(translation, leftRotation, scale, rightRotation));
+        blockDisplay.setBlock(blockData);
+
         return blockDisplay;
     }
 }

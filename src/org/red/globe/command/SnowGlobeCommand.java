@@ -32,6 +32,11 @@ public class SnowGlobeCommand extends AbstractCommand {
                     return false;
                 }
 
+                if (snowGlobe.isCreating()) {
+                    player.sendMessage("SnowGlobe is still creating!");
+                    return false;
+                }
+
                 snowGlobe.spawn(location);
             }
             case "register" -> {

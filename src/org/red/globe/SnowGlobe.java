@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.BlockDisplay;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.joml.Vector3f;
@@ -13,7 +12,10 @@ import org.red.globe.entity.BlockDisplayBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class SnowGlobe {
     private final String name;
@@ -45,7 +47,9 @@ public class SnowGlobe {
         this.size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
         this.filled = filled;
 
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
             for (int x = minX; x < maxX; x++) {
                 for (int y = minY; y < maxY; y++) {
                     for (int z = minZ; z < maxZ; z++) {
@@ -65,7 +69,7 @@ public class SnowGlobe {
             creating = false;
         });
 
-        future.join();
+        executor.shutdown();
     }
 
 
@@ -126,9 +130,14 @@ public class SnowGlobe {
         if (location == null)
             throw new NullPointerException("location is null");
 
+        if (creating)
+            throw new IllegalStateException("snow globe is creating");
+
         spawning = true;
 
         World spawnWorld = location.getWorld();
+
+        List<BlockDisplayBuilder> builders = new ArrayList<>();
 
         double x = location.getBlockX();
         double y = location.getBlockY();
@@ -138,8 +147,9 @@ public class SnowGlobe {
         float sizeY = (float) (1F / this.size.getY());
         float sizeZ = (float) (1F / this.size.getZ());
 
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
+        Future<?> future = executor.submit(() -> {
             for (SnowGlobeBlock snowGlobeBlock : this.snowGlobeBlocks) {
                 Vector vector = snowGlobeBlock.location();
                 double sgbX = vector.getX();
@@ -150,18 +160,25 @@ public class SnowGlobe {
                 double spawnY = y + (sgbY * sizeY);
                 double spawnZ = z + (sgbZ * sizeZ);
                 Location loc = new Location(spawnWorld, spawnX, spawnY, spawnZ);
-                BlockDisplay blockDisplay = new BlockDisplayBuilder(loc).setScale(sizeX, sizeY, sizeZ).spawn();
-                blockDisplay.setBlock(snowGlobeBlock.blockState().getBlockData());
+                builders.add(new BlockDisplayBuilder(loc).setScale(sizeX, sizeY, sizeZ).setBlockData(snowGlobeBlock.blockState().getBlockData()));
 
-                SnowGlobePlugin.sendDebugLog(String.format("SGB Vector :  %.4f, %.4f, %.4f", sgbX, sgbY, sgbZ));
+                /*SnowGlobePlugin.sendDebugLog(String.format("SGB Vector :  %.4f, %.4f, %.4f", sgbX, sgbY, sgbZ));
                 SnowGlobePlugin.sendDebugLog(String.format("Size Vector :  %.4f, %.4f, %.4f", sizeX, sizeY, sizeZ));
-                SnowGlobePlugin.sendDebugLog(String.format("Spawn Location : %s, %.4f, %.4f, %.4f", world.getName(), spawnX, spawnY, spawnZ));
+                SnowGlobePlugin.sendDebugLog(String.format("Spawn Location : %s, %.4f, %.4f, %.4f", world.getName(), spawnX, spawnY, spawnZ));*/
             }
 
             spawning = false;
         });
 
-        future.join();
+        executor.shutdown();
+
+        try {
+            future.get();
+
+            builders.forEach(BlockDisplayBuilder::spawn);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean isIgnoreBlock(Material material) {
