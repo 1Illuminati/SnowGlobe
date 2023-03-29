@@ -22,7 +22,6 @@ public class TestCommand extends AbstractCommand {
         Location loc = player.getLocation();
 
         NewSnowGlobe snowGlobe = new NewSnowGlobe("test", playerData.getPos1(), playerData.getPos2());
-        snowGlobe.addRotation(50, 0, 0);
         snowGlobe.spawn(loc);
 
         return true;

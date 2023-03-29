@@ -8,13 +8,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.joml.Vector3d;
 import org.red.globe.entity.BlockDisplayBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import org.red.globe.util.Scheduler;
 
 public class NewSnowGlobe {
     private final String name;
@@ -109,41 +103,29 @@ public class NewSnowGlobe {
         } else
             throw new IllegalArgumentException("SizeType is Null");
 
-        List<BlockDisplayBuilder> builders = new ArrayList<>();
+        Scheduler.delayScheduler(new Scheduler.RunnableEx() {
+            @Override
+            public void function() {
+                for (int x = minX; x < maxX; x++) {
+                    for (int y = minY; y < maxY; y++) {
+                        for (int z = minZ; z < maxZ; z++) {
+                            Location blockLoc = new Location(originWorld, x, y, z);
+                            Block block = blockLoc.getBlock();
+                            Material type = block.getType();
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+                            if (type == Material.AIR || type == Material.VOID_AIR || type == Material.CAVE_AIR || (blockIsClose(block) && !filled))
+                                continue;
 
-        Future<?> future = executor.submit(() -> {
-            for (int x = minX; x < maxX; x++) {
-                for (int y = minY; y < maxY; y++) {
-                    for (int z = minZ; z < maxZ; z++) {
-                        Location blockLoc = new Location(originWorld, x, y, z);
-                        Block block = blockLoc.getBlock();
-                        Material type = block.getType();
+                            Vector vector = blockLoc.clone().add(-minX, -minY, -minZ).toVector().toBlockVector().multiply(displaySize)
+                                    .add(spawnLoc.clone().toVector().toBlockVector());
 
-                        if (type == Material.AIR || type == Material.VOID_AIR || type == Material.CAVE_AIR || (blockIsClose(block) && filled))
-                            continue;
-
-                        Vector vector = blockLoc.clone().add(-minX, -minY, -minZ).toVector().multiply(displaySize)
-                                .add(spawnLoc.clone().toVector().toBlockVector());
-
-                        builders.add(new BlockDisplayBuilder(new Location(spawnWorld, vector.getX(), vector.getY(), vector.getZ()))
-                                .setScale(displaySize).setBlockData(block.getBlockData()));
+                            new BlockDisplayBuilder(new Location(spawnWorld, vector.getX(), vector.getY(), vector.getZ()))
+                                    .setScale(displaySize).setBlockData(block.getBlockData()).spawn();
+                        }
                     }
                 }
             }
-
-        });
-
-        executor.shutdown();
-
-        try {
-            future.get();
-
-            builders.forEach(BlockDisplayBuilder::spawn);
-        } catch (ExecutionException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        }, 0);
     }
 
     private boolean blockIsClose(Block block) {

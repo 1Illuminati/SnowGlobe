@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.red.globe.SnowGlobe;
+import org.red.globe.SnowGlobeManager;
+import org.red.globe.entity.player.PlayerData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
