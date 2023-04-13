@@ -1,5 +1,6 @@
 package org.red.globe;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -44,12 +45,11 @@ public class SnowGlobe {
         int maxY = Math.max(start.getBlockY(), end.getBlockY());
         int maxZ = Math.max(start.getBlockZ(), end.getBlockZ());
 
-        this.size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
+        int size = Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ));
+        this.size = new Vector(size, size, size);
         this.filled = filled;
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        executor.execute(() -> {
+        Bukkit.getScheduler().runTask(SnowGlobePlugin.getPlugin(), () -> {
             for (int x = minX; x < maxX; x++) {
                 for (int y = minY; y < maxY; y++) {
                     for (int z = minZ; z < maxZ; z++) {
@@ -68,8 +68,6 @@ public class SnowGlobe {
 
             creating = false;
         });
-
-        executor.shutdown();
     }
 
 
@@ -147,9 +145,7 @@ public class SnowGlobe {
         float sizeY = (float) (1F / this.size.getY());
         float sizeZ = (float) (1F / this.size.getZ());
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        Future<?> future = executor.submit(() -> {
+        Bukkit.getScheduler().runTask(SnowGlobePlugin.getPlugin(), () -> {
             for (SnowGlobeBlock snowGlobeBlock : this.snowGlobeBlocks) {
                 Vector vector = snowGlobeBlock.location();
                 double sgbX = vector.getX();
@@ -168,17 +164,8 @@ public class SnowGlobe {
             }
 
             spawning = false;
-        });
-
-        executor.shutdown();
-
-        try {
-            future.get();
-
             builders.forEach(BlockDisplayBuilder::spawn);
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
     private boolean isIgnoreBlock(Material material) {
